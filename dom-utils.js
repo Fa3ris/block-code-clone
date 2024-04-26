@@ -1,10 +1,8 @@
-console.log("hello DOM");
-
 /**
  *
  * @param {string} name
  * @param {Record<string, any>} attrs
- * @param {Element[]} children
+ * @param {Element[]?} children
  * @returns {HTMLElement}
  */
 export function el(name, attrs, children) {
@@ -14,19 +12,25 @@ export function el(name, attrs, children) {
   Object.entries(attrs).forEach(function ([key, value]) {
     e.setAttribute(key, value);
   });
-  children.forEach(function (child) {
-    if (typeof child === "string") {
-      child = document.createTextNode(child);
-    }
-    e.appendChild(child);
-  });
+  children &&
+    children.forEach(function (child) {
+      if (typeof child === "string") {
+        child = document.createTextNode(child);
+      }
+      e.appendChild(child);
+    });
   return e;
+}
+
+/**
+ *
+ * @param {string} content
+ * @returns a text node
+ */
+export function text(content) {
+  return document.createTextNode(content);
 }
 
 export function addEl(el) {
   document.body.append(el);
 }
-
-export const foo = "foo";
-
-export {};

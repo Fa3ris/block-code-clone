@@ -1,9 +1,83 @@
-import { foo, el, addEl } from "./dom-utils.js";
-import { createBlock } from "./block.js";
+import { el, addEl } from "./dom-utils.js";
+import { createBlock, nodeToBlock } from "./block.js";
 
-console.log(foo);
+const program = {
+  action: "program",
+  statements: [
+    {
+      action: "repeat",
+      value: 10,
+      statements: [
+        {
+          action: "forward",
+          value: 12,
+          type: "steps",
+        },
+        {
+          action: "left",
+          value: 33,
+          type: "degrees",
+        },
+        {
+          action: "defVar",
+          value: 1,
+          name: "x",
+        },
+        {
+          action: "op2",
+          op1: "x",
+          operator: "+",
+          op2: 1,
+        },
+        {
+          action: "if",
+          condition: {
+            action: "comparison",
+            op1: "x",
+            operator: ">",
+            op2: 10,
+          },
+          thenStatements: [
+            {
+              action: "op2",
+              op1: "x",
+              operator: "+",
+              op2: 1,
+            },
+          ],
+          elseStatements: [
+            {
+              action: "if",
+              condition: {
+                action: "comparison",
+                op1: "x",
+                operator: "=",
+                op2: 7,
+              },
+              thenStatements: [
+                {
+                  action: "op2",
+                  op1: "x",
+                  operator: "+",
+                  op2: 4,
+                },
+              ],
+              elseStatements: [],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
 
-addEl(el("div", { toto: "12" }, [el("span", undefined, ["HELLO", "MOTO"])]));
+const programBlock = nodeToBlock(program);
+addEl(programBlock);
+
+evalBlock(program);
+function evalBlock(block) {
+  console.log(block);
+}
 
 addEl(
   createBlock(
