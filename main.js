@@ -1,9 +1,15 @@
 import { el, addEl } from "./dom-utils.js";
 import { createBlock, nodeToBlock } from "./block.js";
+import { evalBlock } from "./eval.js";
 
 const program = {
   action: "program",
   statements: [
+    {
+      action: "defVar",
+      value: 1,
+      name: "x",
+    },
     {
       action: "repeat",
       value: 10,
@@ -18,11 +24,7 @@ const program = {
           value: 33,
           type: "degrees",
         },
-        {
-          action: "defVar",
-          value: 1,
-          name: "x",
-        },
+
         {
           action: "op2",
           op1: "x",
@@ -51,7 +53,7 @@ const program = {
               condition: {
                 action: "comparison",
                 op1: "x",
-                operator: "=",
+                operator: "<",
                 op2: 7,
               },
               thenStatements: [
@@ -74,10 +76,7 @@ const program = {
 const programBlock = nodeToBlock(program);
 addEl(programBlock);
 
-evalBlock(program);
-function evalBlock(block) {
-  console.log(block);
-}
+evalBlock(programBlock);
 
 addEl(
   createBlock(
