@@ -36,21 +36,17 @@ export function createBlock(configuration, childBlocks) {
 }
 
 function programBlock(node) {
-  return [
-    [text("program")],
-    [
-      el(
-        "div",
-        { "data-name": "statements" },
-        node.statements.map(nodeToBlock)
-      ),
-    ],
-  ];
+  return [[text("program")], node.statements.map(nodeToBlock)];
 }
 
 function repeatBlock(node) {
   return [
-    [text("repeat"), el("input", { type: "number", value: node.value })],
+    [
+      flexContainer([
+        text("repeat"),
+        el("input", { type: "number", value: node.value }),
+      ]),
+    ],
     node.statements.map(nodeToBlock),
   ];
 }
@@ -58,9 +54,11 @@ function repeatBlock(node) {
 function leftBlock(node) {
   return [
     [
-      text("left"),
-      el("input", { type: "number", value: node.value }),
-      text(node.type),
+      flexContainer([
+        text("left"),
+        el("input", { type: "number", value: node.value }),
+        text(node.type),
+      ]),
     ],
   ];
 }
@@ -68,49 +66,65 @@ function leftBlock(node) {
 function forwardBlock(node) {
   return [
     [
-      text("forward"),
-      el("input", { type: "number", value: node.value }),
-      text(node.type),
+      flexContainer([
+        text("forward"),
+        el("input", { type: "number", value: node.value }),
+        text(node.type),
+      ]),
     ],
   ];
+}
+
+function flexContainer(children) {
+  return el("div", { class: "flex-row" }, children);
 }
 
 function defVarBlock(node) {
   return [
     [
-      text("def"),
-      el("input", { type: "text", value: node.name }),
-      text("="),
-      el("input", { type: "number", value: node.value }),
+      flexContainer([
+        text("def"),
+        el("input", { type: "text", value: node.name }),
+        text("="),
+        el("input", { type: "number", value: node.value }),
+      ]),
     ],
   ];
 }
 function op2Block(node) {
   return [
     [
-      text("do"),
-      el("input", { type: "text", value: node.op1 }),
-      text(node.operator),
-      el("input", { type: "text", value: node.op2 }),
+      flexContainer([
+        text("do"),
+        el("input", { type: "text", value: node.op1 }),
+        text(node.operator),
+        el("input", { type: "text", value: node.op2 }),
+      ]),
     ],
   ];
 }
 
 function ifBlock(node) {
-  const condition = nodeToBlock(node.condition);
   const thens = el(
     "div",
-    { "data-name": "then" },
+    { "data-name": "then", class: "container" },
     node.thenStatements.map(nodeToBlock)
   );
   const elses = el(
     "div",
-    { "data-name": "else" },
+    { "data-name": "else", class: "container" },
     node.elseStatements.map(nodeToBlock)
   );
 
   return [
-    [text("if"), condition],
+    [
+      flexContainer([
+        text("if"),
+        el("input", { type: "text", value: node.condition.op1 }),
+        text(node.condition.operator),
+        el("input", { type: "text", value: node.condition.op2 }),
+      ]),
+    ],
     [text("then"), thens, text("else"), elses],
   ];
 }
@@ -124,6 +138,7 @@ function comparisonBlock(node) {
     ],
   ];
 }
+
 const registry = {
   program: programBlock,
   repeat: repeatBlock,
@@ -141,7 +156,7 @@ export function nodeToBlock(node) {
 
   const block = el(
     "div",
-    { draggable: true, "data-name": action },
+    { draggable: true, "data-name": action, class: "block" },
     configuration
   );
 
