@@ -8,15 +8,32 @@ const registry = {
   if: evalIf,
 };
 
-let scope = {};
+/**
+ * 
+ * this === { scope : {<variables>} }
+ * 
+ */
+function createRunner() {
+  let runs = 0;
+  return {
+    run(block) {
+      const scope = {};
+      evalBlock.call({ scope }, block);
+      console.log("final state", scope, "runs", ++runs);
+    },
+  };
+}
+
+const { run } = createRunner();
+export { run };
 
 /**
  *
  * @param {HTMLElement} block
  */
-export function evalBlock(block) {
+function evalBlock(block) {
   false && console.log(block.dataset.name, block);
-  registry[block.dataset.name](block);
+  registry[block.dataset.name].call(this, block);
 }
 
 /**
@@ -25,7 +42,7 @@ export function evalBlock(block) {
  */
 function evalProgram(block) {
   const statementBlocks = block.querySelector(".container");
-  Array.prototype.map.call(statementBlocks.childNodes, evalBlock);
+  Array.prototype.map.call(statementBlocks.childNodes, evalBlock, this);
 }
 
 /**
@@ -39,7 +56,7 @@ function evalRepeat(block) {
   console.log("repeat", loops);
   while (loops) {
     console.group("loop", loops);
-    Array.prototype.map.call(statementBlocks.childNodes, evalBlock);
+    Array.prototype.map.call(statementBlocks.childNodes, evalBlock, this);
     loops--;
     console.groupEnd();
   }
@@ -69,11 +86,13 @@ function evalLeft(block) {
  */
 function evalDefVar(block) {
   const inputs = block.querySelectorAll("input");
-  console.log("devVar", inputs[0].value, "=", Number(inputs[1].value));
 
-  scope[inputs[0].value] = Number(inputs[1].value);
+  const left = inputs[0].value;
+  const right = Number(inputs[1].value);
+  console.log("defVar", left, "=", right);
 
-  console.log(inputs[0].value, "==", scope[inputs[0].value]);
+  this.scope[left] = right;
+  console.log(left, "==", this.scope[left]);
 }
 
 /**
@@ -82,11 +101,12 @@ function evalDefVar(block) {
  */
 function evalOp2(block) {
   const inputs = block.querySelectorAll("input");
-  console.log("op2", inputs[0].value, "+", Number(inputs[1].value));
+  const left = inputs[0].value;
+  const rigth = Number(inputs[1].value);
+  console.log("op2", left, "+", rigth);
 
-  scope[inputs[0].value] += Number(inputs[1].value);
-
-  console.log(inputs[0].value, "==", scope[inputs[0].value]);
+  this.scope[left] += rigth;
+  console.log(left, "==", this.scope[left]);
 }
 
 /**
@@ -95,33 +115,38 @@ function evalOp2(block) {
  */
 function evalIf(block) {
   const [_, first, comparator, second] = block.firstChild.childNodes;
-  console.log("if", first.value, comparator.textContent, Number(second.value));
 
-  console.log(first.value, "==", scope[first.value]);
+  const left = first.value;
+  const right = Number(second.value);
+  const op = comparator.textContent;
+  console.log("if", left, op, right);
+
+  const leftValue = this.scope[left];
+  console.log(left, "==", leftValue);
 
   let predicate = false;
 
-  switch (comparator.textContent) {
+  switch (op) {
     case ">":
-      predicate = scope[first.value] > Number(second.value);
+      predicate = leftValue > right;
       break;
     case "<":
-      predicate = scope[first.value] < Number(second.value);
+      predicate = leftValue < right;
       break;
     case "=":
-      predicate = scope[first.value] == Number(second.value);
+      predicate = leftValue == right;
       break;
   }
 
   if (predicate) {
     const thens = block.querySelector("[data-name=then]");
     console.group("then");
-    Array.prototype.map.call(thens.childNodes, evalBlock);
+    Array.prototype.map.call(thens.childNodes, evalBlock, this);
     console.groupEnd();
   } else {
     const elses = block.querySelector("[data-name=else]");
     console.group("else");
-    Array.prototype.map.call(elses.childNodes, evalBlock);
+    Array.prototype.map.call(elses.childNodes, evalBlock, this);
     console.groupEnd();
   }
 }

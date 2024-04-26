@@ -1,6 +1,6 @@
 import { el, addEl } from "./dom-utils.js";
 import { createBlock, nodeToBlock } from "./block.js";
-import { evalBlock } from "./eval.js";
+import { run } from "./eval.js";
 
 const program = {
   action: "program",
@@ -76,7 +76,15 @@ const program = {
 const programBlock = nodeToBlock(program);
 addEl(programBlock);
 
-evalBlock(programBlock);
+const inputs = programBlock.querySelectorAll("input");
+
+inputs.forEach((input) => {
+  input.addEventListener("change", () => {
+    run(programBlock);
+  });
+});
+
+run(programBlock);
 
 addEl(
   createBlock(
