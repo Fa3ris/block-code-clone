@@ -102,10 +102,18 @@ function evalDefVar(block) {
 function evalOp2(block) {
   const inputs = block.querySelectorAll("input");
   const left = inputs[0].value;
-  const rigth = Number(inputs[1].value);
-  console.log("op2", left, "+", rigth);
+  const operator = inputs[1].value;
+  const right = Number(inputs[2].value);
+  console.log("op2", left, operator, right);
 
-  this.scope[left] += rigth;
+  switch (operator) {
+    case "+":
+      this.scope[left] += right;
+      break;
+    case "-":
+      this.scope[left] -= right;
+  }
+
   console.log(left, "==", this.scope[left]);
 }
 
@@ -118,7 +126,7 @@ function evalIf(block) {
 
   const left = first.value;
   const right = Number(second.value);
-  const op = comparator.textContent;
+  const op = comparator.value;
   console.log("if", left, op, right);
 
   const leftValue = this.scope[left];
