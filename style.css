@@ -14,3 +14,7 @@ input {
 input.operator {
     width: 1ch;
 }
+
+canvas {
+    border: 1px solid black;
+}

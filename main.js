@@ -84,12 +84,19 @@ blocks.forEach((b) => {
 const inputs = programBlock.querySelectorAll("input");
 
 inputs.forEach((input) => {
-  input.addEventListener("change", () => {
-    run(programBlock);
+  input.addEventListener("input", () => {
+    requestAnimationFrame(() => run(programBlock));
   });
 });
 
 run(programBlock);
+
+// document.addEventListener('dragstart', dragStart, false);
+//     document.addEventListener('dragenter', dragEnter, false);
+//     document.addEventListener('dragover', dragOver, false);
+//     document.addEventListener('drag', function(){}, false);
+//     document.addEventListener('drop', drop, false);
+//     document.addEventListener('dragend', dragEnd, false);
 
 
 if (false) {
