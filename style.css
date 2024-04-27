@@ -6,3 +6,11 @@
 .container {
     margin-left: 12px;
 }
+
+input {
+    width: 10ch;
+}
+
+input.operator {
+    width: 1ch;
+}

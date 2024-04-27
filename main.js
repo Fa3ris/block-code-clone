@@ -74,7 +74,12 @@ const program = {
 };
 
 const programBlock = nodeToBlock(program);
-addEl(programBlock);
+addEl(programBlock, ".program-container");
+
+const blocks = ["repeat", "left", "forward", "defVar", "op2", "if"];
+blocks.forEach((b) => {
+  addEl(nodeToBlock(b), ".menu-items");
+});
 
 const inputs = programBlock.querySelectorAll("input");
 
@@ -86,39 +91,42 @@ inputs.forEach((input) => {
 
 run(programBlock);
 
-addEl(
-  createBlock(
-    ["repeat", el("input", { type: "number", value: 10 })],
-    [
-      [["forward", el("input", { type: "number", value: 12 }), "steps"]],
+
+if (false) {
+  addEl(
+    createBlock(
+      ["repeat", el("input", { type: "number", value: 10 })],
       [
-        ["left", el("input", { type: "number", value: 12 }), "degrees"],
+        [["forward", el("input", { type: "number", value: 12 }), "steps"]],
         [
+          ["left", el("input", { type: "number", value: 12 }), "degrees"],
           [
             [
-              "var",
-              el("input", { type: "text", value: "x" }),
-              el("input", { type: "number", value: 5 }),
+              [
+                "var",
+                el("input", { type: "text", value: "x" }),
+                el("input", { type: "number", value: 5 }),
+              ],
             ],
-          ],
-          [["right", el("input", { type: "number", value: 42 }), "degrees"]],
-          [
+            [["right", el("input", { type: "number", value: 42 }), "degrees"]],
             [
-              "add",
-              el("input", { type: "text", value: "x" }),
-              el("input", { type: "number", value: 1 }),
+              [
+                "add",
+                el("input", { type: "text", value: "x" }),
+                el("input", { type: "number", value: 1 }),
+              ],
             ],
-          ],
-          [
             [
-              "if",
-              el("input", { type: "text", value: "x" }),
-              ">",
-              el("input", { type: "number", value: 10 }),
+              [
+                "if",
+                el("input", { type: "text", value: "x" }),
+                ">",
+                el("input", { type: "number", value: 10 }),
+              ],
             ],
           ],
         ],
-      ],
-    ]
-  )
-);
+      ]
+    )
+  );
+}

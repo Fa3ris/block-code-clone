@@ -103,8 +103,7 @@ function op2Block(node = {}) {
       flexContainer([
         text("do"),
         el("input", { type: "text", value: op1 }),
-        el("input", { type: "text", value: operator }),
-        // text(operator),
+        el("input", { type: "text", value: operator, class: "operator" }),
         el("input", { type: "text", value: op2 }),
       ]),
     ],
@@ -134,7 +133,7 @@ function ifBlock(node = {}) {
       flexContainer([
         text("if"),
         el("input", { type: "text", value: op1 }),
-        el("input", { type: "text", value: operator }),
+        el("input", { type: "text", value: operator, class: "operator" }),
         el("input", { type: "text", value: op2 }),
       ]),
     ],

@@ -31,6 +31,9 @@ export function text(content) {
   return document.createTextNode(content);
 }
 
-export function addEl(el) {
-  document.body.append(el);
+export function addEl(el, parentSelector = document.body) {
+  if (typeof parentSelector === "string") {
+    parentSelector = document.body.querySelector(parentSelector);
+  }
+  parentSelector.append(el);
 }
