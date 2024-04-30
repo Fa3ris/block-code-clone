@@ -3,8 +3,13 @@
     display: flex;
     column-gap: 8px;
 }
-.container {
+.container, .container-like {
     margin-left: 12px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 12px;
+    padding-top: 12px;
+    padding-bottom: 12px;
 }
 
 input {
@@ -17,4 +22,9 @@ input.operator {
 
 canvas {
     border: 1px solid black;
+}
+
+
+.dragged-into {
+    border: 1px dashed black
 }
