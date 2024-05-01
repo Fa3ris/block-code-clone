@@ -1,5 +1,5 @@
-import { el, addEl } from "./dom-utils.js";
-import { createBlock, nodeToBlock, blockAsMenuItem } from "./block.js";
+import { attachListeners, nodeToBlock } from "./block.js";
+import { addEl } from "./dom-utils.js";
 import { run } from "./eval.js";
 
 const program = {
@@ -74,18 +74,17 @@ const program = {
 };
 
 const programBlock = nodeToBlock(program);
-addEl(programBlock, ".program-container");
+
+const pgContainer = document.body.querySelector(".program-container");
+const menuContainer = document.body.querySelector(".menu-items");
+
+attachListeners(programBlock, menuContainer, (block) =>
+  requestAnimationFrame(() => run(block))
+);
+addEl(programBlock, pgContainer);
 
 ["repeat", "left", "forward", "defVar", "op2", "if"].forEach((b) => {
-  addEl(blockAsMenuItem(b), ".menu-items");
+  addEl(nodeToBlock(b), menuContainer);
 });
 
-const inputs = programBlock.querySelectorAll("input");
-
-inputs.forEach((input) => {
-  input.addEventListener("input", () => {
-    requestAnimationFrame(() => run(programBlock));
-  });
-});
-
-run(programBlock);
+requestAnimationFrame(() => run(programBlock));

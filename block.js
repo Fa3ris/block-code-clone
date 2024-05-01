@@ -1,39 +1,14 @@
 import { el, text } from "./dom-utils.js";
 
+const CONTAINER = "container";
+const DRAGGED_INTO = "dragged-into";
+
 /**
  * @typedef {[String, ...Element[]]} BlockConfig
  */
 /**
  * @typedef {[BlockConfig, ChildBlockConfig[]?]} ChildBlockConfig
  */
-
-/**
- *
- * @param {BlockConfig} configuration
- * @param {ChildBlockConfig[]?} childBlocks
- */
-export function createBlock(configuration, childBlocks) {
-  const name = configuration[0];
-  const block = el(
-    "div",
-    { draggable: true, "data-name": name },
-    configuration
-  );
-
-  if (Array.isArray(childBlocks)) {
-    block.appendChild(
-      el(
-        "div",
-        { class: CONTAINER },
-        childBlocks.map(function (block) {
-          return createBlock.apply(null, block);
-        })
-      )
-    );
-  }
-
-  return block;
-}
 
 function programBlock(node) {
   return [[text("program")], node.statements.map(nodeToBlock)];
@@ -81,28 +56,6 @@ function forwardBlock(node = {}) {
   ];
 }
 
-function flexContainer(children) {
-  return el("div", { class: "flex-row" }, children);
-}
-
-/**
- *
- * @param {HTMLElement} el
- * @returns
- */
-function nonDroppable(el) {
-  el.addEventListener("dragenter", (evt) => {
-    evt.dataTransfer.dropEffect = "none";
-    evt.preventDefault();
-  });
-
-  el.addEventListener("dragover", (evt) => {
-    evt.dataTransfer.dropEffect = "none";
-    evt.preventDefault();
-  });
-  return el;
-}
-
 function defVarBlock(node = {}) {
   const varId = node.name || "";
   const value = node.value || 0;
@@ -117,6 +70,7 @@ function defVarBlock(node = {}) {
     ],
   ];
 }
+
 function op2Block(node = {}) {
   const op1 = node.op1 || "";
   const operator = node.operator || "+";
@@ -199,92 +153,93 @@ export function nodeToBlock(node) {
     configuration
   );
 
-  block.addEventListener("dragstart", (evt) => {
-    const template = document.createElement("template");
-    template.innerHTML = evt.target.outerHTML;
-    const result = template.content.firstChild;
+  if (Array.isArray(childBlocks)) {
+    const containerBlock = el("div", { class: CONTAINER }, childBlocks);
+    block.appendChild(containerBlock);
+  }
+  return block;
+}
 
-    if (MENU_ITEM in evt.target.dataset) {
-      delete result.dataset.menu_item;
-      evt.dataTransfer.effectAllowed = "copy";
-    } else {
-      evt.dataTransfer.effectAllowed = "move";
-    }
-    evt.dataTransfer.setData("text/plain", result.outerHTML);
+export function attachListeners(pgBlock, menuBlock, triggerRun) {
+  let dragged;
+
+  menuBlock.addEventListener("dragstart", (evt) => {
+    dragged = evt.target;
+    evt.dataTransfer.effectAllowed = "copy";
   });
 
-  block.addEventListener("dragend", (evt) => {
+  menuBlock.addEventListener("dragend", () => {
+    dragged = null;
+  });
+
+  pgBlock.addEventListener("dragstart", (evt) => {
+    dragged = evt.target;
+    evt.dataTransfer.effectAllowed = "move";
+  });
+
+  pgBlock.addEventListener("dragend", (evt) => {
+    dragged = null;
     if (evt.dataTransfer.dropEffect === "move") {
       evt.target.remove();
     }
   });
 
-  if (Array.isArray(childBlocks)) {
-    const containerBlock = el("div", { class: CONTAINER }, childBlocks);
-    block.appendChild(containerBlock);
+  function handleDropZone(evt) {
+    if (!evt.target.classList.contains(CONTAINER)) {
+      evt.dataTransfer.dropEffect = "none";
+      return;
+    }
 
-    containerBlock.addEventListener("dragenter", (evt) => {
-      if (MENU_ITEM in block.dataset) {
-        evt.dataTransfer.dropEffect = "none";
-        return;
-      }
-      if (!evt.target.classList.contains(CONTAINER)) {
-        evt.dataTransfer.dropEffect = "none";
-        return;
-      }
-      evt.preventDefault();
-      evt.dataTransfer.dropEffect = evt.dataTransfer.effectAllowed;
-      evt.target.classList.add(DRAGGED_INTO);
-    });
-
-    containerBlock.addEventListener("dragover", (evt) => {
-      if (MENU_ITEM in block.dataset) {
-        evt.dataTransfer.dropEffect = "none";
-        return;
-      }
-      if (!evt.target.classList.contains(CONTAINER)) {
-        evt.dataTransfer.dropEffect = "none";
-        return;
-      }
-
-      evt.preventDefault();
-      evt.dataTransfer.dropEffect = evt.dataTransfer.effectAllowed;
-      evt.target.classList.add(DRAGGED_INTO);
-    });
-
-    containerBlock.addEventListener("dragleave", (evt) => {
-      if (!evt.target.classList.contains(CONTAINER)) {
-        return;
-      }
-      evt.target.classList.remove(DRAGGED_INTO);
-    });
-
-    containerBlock.addEventListener("drop", (evt) => {
-      if (!evt.target.classList.contains(CONTAINER)) {
-        return;
-      }
-      evt.preventDefault();
-      evt.stopPropagation(); // prevent other drops from firing
-
-      const html = evt.dataTransfer.getData("text/plain");
-      const template = document.createElement("template");
-      template.innerHTML = html;
-      const result = template.content.children;
-
-      evt.target.append(...result);
-      evt.target.classList.remove(DRAGGED_INTO);
-    });
+    if (dragged.contains(evt.target)) {
+      evt.dataTransfer.dropEffect = "none";
+      return;
+    }
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = evt.dataTransfer.effectAllowed;
+    evt.target.classList.add(DRAGGED_INTO);
   }
-  return block;
+
+  pgBlock.addEventListener("dragenter", handleDropZone);
+
+  pgBlock.addEventListener("dragover", handleDropZone);
+
+  pgBlock.addEventListener("dragleave", (evt) => {
+    if (!evt.target.classList.contains(CONTAINER)) {
+      return;
+    }
+    evt.target.classList.remove(DRAGGED_INTO);
+  });
+
+  pgBlock.addEventListener("drop", (evt) => {
+    if (!evt.target.classList.contains(CONTAINER)) {
+      return;
+    }
+    evt.preventDefault();
+    evt.target.append(dragged.cloneNode(true));
+    evt.target.classList.remove(DRAGGED_INTO);
+  });
+
+  pgBlock.addEventListener("input", () => triggerRun(pgBlock));
 }
 
-const MENU_ITEM = "menu_item";
-const DRAGGED_INTO = "dragged-into";
-const CONTAINER = "container";
+function flexContainer(children) {
+  return el("div", { class: "flex-row" }, children);
+}
 
-export function blockAsMenuItem(b) {
-  const block = nodeToBlock(b);
-  block.dataset[MENU_ITEM] = "";
+/**
+ *
+ * @param {HTMLElement} el
+ * @returns
+ */
+function nonDroppable(el) {
+  el.addEventListener("dragenter", (evt) => {
+    evt.dataTransfer.dropEffect = "none";
+    evt.preventDefault();
+  });
 
-  return block;
+  el.addEventListener("dragover", (evt) => {
+    evt.dataTransfer.dropEffect = "none";
+    evt.preventDefault();
+  });
+  return el;
 }

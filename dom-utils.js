@@ -31,6 +31,11 @@ export function text(content) {
   return document.createTextNode(content);
 }
 
+/**
+ * 
+ * @param {HTMLElement} el 
+ * @param {HTMLElement | string} parentSelector 
+ */
 export function addEl(el, parentSelector = document.body) {
   if (typeof parentSelector === "string") {
     parentSelector = document.body.querySelector(parentSelector);
