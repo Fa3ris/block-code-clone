@@ -2,7 +2,7 @@ import { el, text } from "./dom-utils.js";
 
 const CONTAINER = "container";
 const DRAGGED_INTO = "dragged-into";
-
+const INSERT_BEFORE = "insert-before";
 /**
  * @typedef {[String, ...Element[]]} BlockConfig
  */
@@ -163,6 +163,8 @@ export function nodeToBlock(node) {
 export function attachListeners(pgBlock, menuBlock, triggerRun) {
   let dragged;
 
+  let childNode;
+
   menuBlock.addEventListener("dragstart", (evt) => {
     dragged = evt.target;
     evt.dataTransfer.effectAllowed = "copy";
@@ -185,6 +187,12 @@ export function attachListeners(pgBlock, menuBlock, triggerRun) {
   });
 
   function handleDropZone(evt) {
+    if (childNode) {
+      childNode.classList.remove(INSERT_BEFORE);
+    }
+
+    childNode = null;
+
     if (!evt.target.classList.contains(CONTAINER)) {
       evt.dataTransfer.dropEffect = "none";
       return;
@@ -194,6 +202,17 @@ export function attachListeners(pgBlock, menuBlock, triggerRun) {
       evt.dataTransfer.dropEffect = "none";
       return;
     }
+
+    if (evt.target.children.length) {
+      for (const child of evt.target.children) {
+        if (dragged !== child && evt.y < child.getBoundingClientRect().y) {
+          childNode = child;
+          childNode.classList.add(INSERT_BEFORE);
+          break;
+        }
+      }
+    }
+
     evt.preventDefault();
     evt.dataTransfer.dropEffect = evt.dataTransfer.effectAllowed;
     evt.target.classList.add(DRAGGED_INTO);
@@ -215,7 +234,13 @@ export function attachListeners(pgBlock, menuBlock, triggerRun) {
       return;
     }
     evt.preventDefault();
-    evt.target.append(dragged.cloneNode(true));
+    if (childNode) {
+      evt.target.insertBefore(dragged.cloneNode(true), childNode);
+      childNode.classList.remove(INSERT_BEFORE);
+      childNode = null;
+    } else {
+      evt.target.append(dragged.cloneNode(true));
+    }
     evt.target.classList.remove(DRAGGED_INTO);
   });
 

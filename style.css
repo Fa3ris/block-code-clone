@@ -28,3 +28,8 @@ canvas {
 .dragged-into {
     border: 1px dashed black
 }
+
+.insert-before {
+    border-top: 10px solid rgba(255, 0, 0, 0.603);
+    padding-top: 3px
+}
